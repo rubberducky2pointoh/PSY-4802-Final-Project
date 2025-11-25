@@ -10,3 +10,19 @@ library(readr)
 anesVoterDat <- read.csv("~/PSY-4802-Final-Project/anes_timeseries_2024_csv_20250808.csv", header=FALSE)
 View(anesVoterDat)
 ```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(viridis)
+```
+
+```{r}
+smallAnesVoterDat<- anesVoterDat %>% 
+  select(V2, V52, V61, V62, V64, V70, V71, V72, V78, V93, V105, V909, V910, V916, V919, V920, V924, V926, V927, V930)
+view(smallAnesVoterDat)
+names(smallAnesVoterDat)<- c("Participant", "registeredVoter", "sampleState", "registeredState", "registeredParty", "primaryVoter", "demPrimary", "repPrimary", "prePresVote", "preHouseVote", "preSenateVote", "presVote", "presCandidate", "presPref", "houseVote", "houseParty", "housePartyPref", "senateVoted", "senateParty", "senatePartyPref")
+cleanAnesDat<- smallAnesVoterDat[-c(1),]
+```
+
