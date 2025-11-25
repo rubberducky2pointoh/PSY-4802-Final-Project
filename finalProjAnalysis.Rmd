@@ -1,0 +1,12 @@
+---
+title: "Voting habits in elections based on states and surrounding context"
+author: "Sawyer Wedin"
+date: "2025-11-25"
+output: html_document
+---
+
+```{r}
+library(readr)
+anesVoterDat <- read.csv("~/PSY-4802-Final-Project/anes_timeseries_2024_csv_20250808.csv", header=FALSE)
+View(anesVoterDat)
+```
