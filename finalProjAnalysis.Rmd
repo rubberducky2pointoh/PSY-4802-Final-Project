@@ -19,20 +19,20 @@ library(viridis)
 ```
 
 ```{r}
+#First I sectioned out the columns I'm interested in.
 smallAnesVoterDat<- anesVoterDat %>% 
   select(V2, V52, V61, V62, V64, V70, V71, V72, V78, V93, V105, V909, V910, V916, V919, V920, V924, V926, V927, V930)
 view(smallAnesVoterDat)
+
+#Next, I renamed the columns to something more understandable. Columns with the "pre" prefix include answers given before voting. I removed the top column, which contained the column names as seen in th Excel file (which have now become redundant and interfere with the data). Then I replaced negative numbers with NA values.
 names(smallAnesVoterDat)<- c("Participant", "registeredVoter", "sampleState", "registeredState", "registeredParty", "primaryVoter", "demPrimary", "repPrimary", "prePresVote", "preHouseVote", "preSenateVote", "presVote", "presCandidate", "presPref", "houseVote", "houseParty", "housePartyPref", "senateVoted", "senateParty", "senatePartyPref")
 cleanerAnesDat<- smallAnesVoterDat[-c(1),]
 cleanerAnesDat$statePresVote<- cleanerAnesDat$registeredState
-newCleanerAnesDat<- cleanerAnesDat
-newCleanerAnesDat[newCleanerAnesDat==-1]<- NA
-cleanAnes<- newCleanerAnesDat %>% select(-registeredVoter)
-#cleanAnes$statePresVote2<- for (i in 1:length(cleanAnes)) {
- #replace(cleanAnes$statePresVote2, c(1, 2, 4, 5, 12, 13, 16, 18, 19, 20, 21, 22, 26, 28, 29, 30, 31, 32, 37, 38, 39, 40, 42, 45, 46, 47, 48, 49, 54, 55, 56), 0) 
-#}
+CleanerAnesDat[CleanerAnesDat==-1]<- NA
 
-# This is as far as I've gotten as of 11/25/2025.I'm trying to replace the states that voted Republican with 0 and Democrat with 1 so I can use them as binary data. I'm kind of hitting a wall however, since it doesn't seem to want to do that. I have other things I need to do, so I'm taking the hit for now, but help would be greatly appreciated!
+
+cleanAnes<- newCleanerAnesDat %>% select(-registeredVoter)
+cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote, levels=c("1", "2", "4", "5", "6", "8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"), labels=c("2", "2", "2", "2", "1", "1", "1", "1", "1", "2", "2", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "1", "2", "2", "2", "2", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "2", "2", "2"))
 ```
 
 1. Are voters likely to vote congruent to the state they are registered to vote in?
