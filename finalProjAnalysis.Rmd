@@ -19,6 +19,7 @@ library(viridis)
 ```
 
 ```{r}
+#Rows here are listed as participants. One of the survey questions is which state they are registered to vote in, so I think it is safe to use that as what state they are "in".
 #First I sectioned out the columns I'm interested in.
 smallAnesVoterDat<- anesVoterDat %>% 
   select(V2, V52, V61, V62, V64, V70, V71, V72, V78, V93, V105, V909, V910, V916, V919, V920, V924, V926, V927, V930)
@@ -26,17 +27,29 @@ view(smallAnesVoterDat)
 
 #Next, I renamed the columns to something more understandable. Columns with the "pre" prefix include answers given before voting. I removed the top column, which contained the column names as seen in th Excel file (which have now become redundant and interfere with the data). Then I replaced negative numbers with NA values.
 names(smallAnesVoterDat)<- c("Participant", "registeredVoter", "sampleState", "registeredState", "registeredParty", "primaryVoter", "demPrimary", "repPrimary", "prePresVote", "preHouseVote", "preSenateVote", "presVote", "presCandidate", "presPref", "houseVote", "houseParty", "housePartyPref", "senateVoted", "senateParty", "senatePartyPref")
+#sampleState is just asking if the state they reside in matches the state they vote in.
 cleanerAnesDat<- smallAnesVoterDat[-c(1),]
 cleanerAnesDat$statePresVote<- cleanerAnesDat$registeredState
-CleanerAnesDat[CleanerAnesDat==-1]<- NA
+cleanerAnesDat[cleanerAnesDat==-1]<- NA
 
 
-cleanAnes<- newCleanerAnesDat %>% select(-registeredVoter)
+cleanAnes<- cleanerAnesDat %>% select(-registeredVoter)
 cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote, levels=c("1", "2", "4", "5", "6", "8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"), labels=c("2", "2", "2", "2", "1", "1", "1", "1", "1", "2", "2", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "1", "2", "2", "2", "2", "1", "2", "1", "2", "2", "2", "2", "2", "1", "1", "1", "2", "2", "2"))
 ```
 
 1. Are voters likely to vote congruent to the state they are registered to vote in?
 ```{r}
+cleanAnes$congruent <- ifelse(cleanAnes$presCandidate==cleanAnes$statePresVote2, 1, 0)
+glm(formula = congruent~presCandidate+statePresVote2, family = "binomial", data=cleanAnes)
+```
 
+2. Are people more likely to register with a party than not?
+```{r}
+#chi sq.
+```
+
+3. What elections are voters most likely to participate in?
+```{r}
+#log. reg.
 ```
 
