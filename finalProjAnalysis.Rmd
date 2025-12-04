@@ -40,12 +40,26 @@ cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote, levels=c("1", "2", "4
 1. Are voters likely to vote congruent to the state they are registered to vote in?
 ```{r}
 cleanAnes$congruent <- ifelse(cleanAnes$presCandidate==cleanAnes$statePresVote2, 1, 0)
-glm(formula = congruent~presCandidate+statePresVote2, family = "binomial", data=cleanAnes)
+summary(glm(formula = congruent~statePresVote2+presCandidate, family = "binomial", data=cleanAnes))
+
+ggplot(cleanAnes, aes(Participant, statePresVote2, colour = presCandidate))+
+  theme_bw()+
+  geom_point(alpha=.5)+
+  stat_smooth(method = "glm", se=FALSE, method.args = list(family=binomial))+
+  facet_wrap(~congruent)
+
+# Help
 ```
 
 2. Are people more likely to register with a party than not?
 ```{r}
 #chi sq.
+levels(as.factor(cleanAnes$registeredParty))
+cleanAnes[cleanAnes==-8]<- NA
+cleanAnes[cleanAnes==-9]<- NA
+chisq.test(cleanAnes$registeredParty)
+
+#SOBBING
 ```
 
 3. What elections are voters most likely to participate in?
