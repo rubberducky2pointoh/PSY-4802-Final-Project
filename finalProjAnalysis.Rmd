@@ -16,6 +16,7 @@ library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
 library(viridis)
+library(tidyr)
 ```
 
 ```{r}
@@ -40,30 +41,99 @@ cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote, levels=c("1", "2", "4
 1. Are voters likely to vote congruent to the state they are registered to vote in?
 ```{r}
 cleanAnes$congruent <- ifelse(cleanAnes$presCandidate==cleanAnes$statePresVote2, 1, 0)
+cleanAnes$presCandidate[cleanAnes$presCandidate==-6]<- NA
+cleanAnes$presCandidate[cleanAnes$presCandidate==-7]<- NA
+cleanAnes$presCandidate[cleanAnes$presCandidate==-8]<- NA
+cleanAnes$presCandidate[cleanAnes$presCandidate==-9]<- NA
+cleanAnes$presCandidate<- factor(cleanAnes$presCandidate, levels = c("1", "2", "4", "5", "6"), labels = c("D", "R", "Other", "Other", "Other"))
+cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote2, levels = c("1", "2"), labels = c("D", "R"))
 summary(glm(formula = congruent~statePresVote2+presCandidate, family = "binomial", data=cleanAnes))
 
-ggplot(cleanAnes, aes(Participant, statePresVote2, colour = presCandidate))+
+cleanAnes$congruent2<- factor(cleanAnes$congruent, levels = c("0", "1"), labels = c("Incongruent", "Congruent"))
+ggplot(data = subset(cleanAnes, !is.na(statePresVote2)), aes(statePresVote2, fill = presCandidate))+
   theme_bw()+
-  geom_point(alpha=.5)+
-  stat_smooth(method = "glm", se=FALSE, method.args = list(family=binomial))+
-  facet_wrap(~congruent)
-
-# Help
+  geom_bar()+
+  facet_wrap(~congruent2)+
+  ggtitle("Congruency of Voters with State")+
+  xlab("Electoral College Vote in State")+
+  ylab("Number of Participants")
 ```
 
-2. Are people more likely to register with a party than not?
+2. Are party registration frequencies more likely than chance?
 ```{r}
-#chi sq.
+#Setting up
 levels(as.factor(cleanAnes$registeredParty))
-cleanAnes[cleanAnes==-8]<- NA
-cleanAnes[cleanAnes==-9]<- NA
-chisq.test(cleanAnes$registeredParty)
+cleanAnes$registeredParty[cleanAnes$registeredParty==-8]<- NA
+cleanAnes$registeredParty[cleanAnes$registeredParty==-9]<- NA
+cleanAnes$registeredParty[cleanAnes$registeredParty==4]<- NA
+summary(cleanAnes$registeredParty)
+cleanAnes$registeredParty<- as.numeric(cleanAnes$registeredParty)
+levels(as.factor(cleanAnes$registeredParty))
 
-#SOBBING
+#I got this far, then realized it doesn't want to let me run a test on specific columns. So we must make another matrix!
+cleanAnes$democratMember<- ifelse(cleanAnes$registeredParty==1, 1, 0)
+cleanAnes$republicanMember<- ifelse(cleanAnes$registeredParty==2, 1, 0)
+cleanAnes$otherParty<- ifelse(cleanAnes$registeredParty==5, 1, 0)
+
+anesPartyMemberDat<- matrix(c(cleanAnes$democratMember, cleanAnes$republicanMember, cleanAnes$otherParty), ncol = 3)
+colnames(anesPartyMemberDat)<- c("Democrat", "Republican", "Other")
+
+chisq.test(na.omit(anesPartyMemberDat)) #X-squared = 3970, df = 3968, p-value = 0.4881
+
+cleanAnes$registeredParty2<- factor(cleanAnes$registeredParty, levels = c("1", "2", "5"), labels = c("Democrat", "Republican", "Other"))
+cleanAnes$registeredParty2[cleanAnes$registeredParty2==NA]<- "No Data"
+ggplot(cleanAnes, aes(registeredParty2, fill = presCandidate))+
+  geom_bar()+
+  theme_bw()+
+  ggtitle("Party Affiliation")+
+  xlab("Party")+
+  ylab("Number of Participants")
 ```
 
 3. What elections are voters most likely to participate in?
 ```{r}
-#log. reg.
+#mcnemar.test
+#First, the Senate vote
+levels(as.factor(cleanAnes$senateVoted))
+cleanAnes$senateVoted[cleanAnes$senateVoted==-5]<- NA
+cleanAnes$senateVoted[cleanAnes$senateVoted==-7]<- NA
+cleanAnes$senateVoted[cleanAnes$senateVoted==-6]<- NA
+cleanAnes$senateVoted<- as.factor(cleanAnes$senateVoted)
+is.factor(cleanAnes$senateVoted)
+summary(cleanAnes$senateVoted) #Here, 1 = D and 2 = R
+
+#Now, the House vote
+levels(as.factor(cleanAnes$houseVote))
+cleanAnes$houseVote[cleanAnes$houseVote==-5]<- NA
+cleanAnes$houseVote[cleanAnes$houseVote==-7]<- NA
+cleanAnes$houseVote[cleanAnes$houseVote==-6]<- NA
+cleanAnes$houseVote<- as.factor(cleanAnes$houseVote)
+is.factor(cleanAnes$houseVote)
+summary(cleanAnes$houseVote) #Here, 1 = D and 2 = R
+
+# This is my best guess for figuring out how to set this up?
+cleanAnes$bothHouseSenate<- ifelse(cleanAnes$houseVote==1 & cleanAnes$senateVoted==1, 1, 0)
+cleanAnes$bothHouseSenate<- as.factor(cleanAnes$bothHouseSenate)
+cleanAnes$onlyHouse<- ifelse(cleanAnes$houseVote==1 & cleanAnes$senateVoted==2, 1, 0)
+cleanAnes$onlyHouse<- as.factor(cleanAnes$onlyHouse)
+cleanAnes$onlySenate<- ifelse(cleanAnes$senateVoted==1 & cleanAnes$houseVote==2, 1, 0)
+cleanAnes$onlySenate<- as.factor(cleanAnes$onlySenate)
+cleanAnes$noHouseSenate<- ifelse(cleanAnes$senateVoted==2 & cleanAnes$houseVote==2, 1, 0)
+cleanAnes$noHouseSenate<- as.factor(cleanAnes$noHouseSenate)
+
+#Now to figure out what my matrix is going to look like
+summary(cleanAnes$bothHouseSenate)
+summary(cleanAnes$onlyHouse)
+summary(cleanAnes$onlySenate)
+summary(cleanAnes$noHouseSenate)
+
+#Assembling the matrix
+anesSenateHouse<- c(2418, 37, 98, 149)
+anesSenateHouseMatrix<- matrix(anesSenateHouse, ncol = 2)
+colnames(anesSenateHouseMatrix)<- c("Voted in House", "Did Not Vote in House")
+rownames(anesSenateHouseMatrix)<- c("Voted in Senate", "Did Not Vote in Senate")
+mcnemar.test(anesSenateHouseMatrix) #McNemar's chi-squared = 26.667, df = 1, p-value = 2.418e-07
+
+print(anesSenateHouseMatrix)
 ```
 
