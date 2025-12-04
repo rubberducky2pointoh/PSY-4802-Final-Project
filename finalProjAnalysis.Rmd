@@ -5,13 +5,13 @@ date: "2025-11-25"
 output: html_document
 ---
 
-```{r}
+```{r Data Import, echo=TRUE}
 library(readr)
 anesVoterDat <- read.csv("~/PSY-4802-Final-Project/anes_timeseries_2024_csv_20250808.csv", header=FALSE)
 View(anesVoterDat)
 ```
 
-```{r}
+```{r Package Setup, echo=TRUE}
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
@@ -19,7 +19,7 @@ library(viridis)
 library(tidyr)
 ```
 
-```{r}
+```{r Data Cleaning, echo=TRUE}
 #Rows here are listed as participants. One of the survey questions is which state they are registered to vote in, so I think it is safe to use that as what state they are "in".
 #First I sectioned out the columns I'm interested in.
 smallAnesVoterDat<- anesVoterDat %>% 
@@ -39,7 +39,7 @@ cleanAnes$statePresVote2<- factor(cleanAnes$statePresVote, levels=c("1", "2", "4
 ```
 
 1. Are voters likely to vote congruent to the state they are registered to vote in?
-```{r}
+```{r Hypothesis 1, echo=TRUE}
 cleanAnes$congruent <- ifelse(cleanAnes$presCandidate==cleanAnes$statePresVote2, 1, 0)
 cleanAnes$presCandidate[cleanAnes$presCandidate==-6]<- NA
 cleanAnes$presCandidate[cleanAnes$presCandidate==-7]<- NA
@@ -60,7 +60,7 @@ ggplot(data = subset(cleanAnes, !is.na(statePresVote2)), aes(statePresVote2, fil
 ```
 
 2. Are party registration frequencies more likely than chance?
-```{r}
+```{r Hypothesis 2, echo=TRUE}
 #Setting up
 levels(as.factor(cleanAnes$registeredParty))
 cleanAnes$registeredParty[cleanAnes$registeredParty==-8]<- NA
@@ -91,7 +91,7 @@ ggplot(cleanAnes, aes(registeredParty2, fill = presCandidate))+
 ```
 
 3. What elections are voters most likely to participate in?
-```{r}
+```{r Hypothesis 3, echo=TRUE}
 #mcnemar.test
 #First, the Senate vote
 levels(as.factor(cleanAnes$senateVoted))
